@@ -18,12 +18,14 @@ const DynamicStepContent = ({ step }) => {
         const config = response.data.find(c => c.page_number === step);
         if (config) {
           const activeComponents = [];
-          if (config.has_about_me) activeComponents.push('aboutMe');
+          if (config.has_about_me) activeComponents.push('about_me');
           if (config.has_address) activeComponents.push('address');
           if (config.has_birthdate) activeComponents.push('birthdate');
           setComponents(activeComponents);
+          console.log('Active components:', activeComponents);
         }
       } catch (error) {
+        console.error('Error fetching components:', error);
         setError('Failed to fetch components');
       }
     };
@@ -62,8 +64,8 @@ const DynamicStepContent = ({ step }) => {
 
   const renderComponent = (componentName) => {
     switch (componentName) {
-      case 'aboutMe':
-        return <AboutMeComponent key="aboutMe" />;
+      case 'about_me':
+        return <AboutMeComponent key="about_me" />;
       case 'address':
         return <AddressComponent key="address" />;
       case 'birthdate':
@@ -82,15 +84,6 @@ const DynamicStepContent = ({ step }) => {
       )}
       
       {components.map(renderComponent)}
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-        <Button onClick={handleBack}>
-          Back
-        </Button>
-        <Button variant="contained" onClick={handleNext}>
-          {step === 3 ? 'Finish' : 'Next'}
-        </Button>
-      </Box>
     </Box>
   );
 };

@@ -16,17 +16,11 @@ const Header = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        {user.role === 'admin' ? (
+        {user.role === 'admin' && (
           <Box sx={{ flexGrow: 1, display: 'flex', gap: 2 }}>
             <Button color="inherit" onClick={() => navigate('/admin')}>
               Admin Config
             </Button>
-            <Button color="inherit" onClick={() => navigate('/data')}>
-              View Data
-            </Button>
-          </Box>
-        ) : (
-          <Box sx={{ flexGrow: 1 }}>
             <Button color="inherit" onClick={() => navigate('/data')}>
               View Data
             </Button>

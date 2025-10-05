@@ -76,20 +76,10 @@ const LoginPage = () => {
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mb: 2 }}
           >
             Login
           </Button>
         </Box>
-
-        <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-          Default Credentials:
-        </Typography>
-        <Typography variant="body2" align="center" sx={{ mt: 1 }}>
-          Admin: admin@onboarding.io / Onboard@2025
-          <br />
-          User: user@onboarding.io / Welcome@2025
-        </Typography>
       </Paper>
     </Box>
   );

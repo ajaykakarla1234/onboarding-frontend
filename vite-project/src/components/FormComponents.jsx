@@ -12,8 +12,8 @@ export const AboutMeComponent = () => {
         rows={4}
         fullWidth
         label="Tell us about yourself"
-        value={userData.aboutMe}
-        onChange={(e) => updateUserData({ aboutMe: e.target.value })}
+        value={userData.about_me || ''}
+        onChange={(e) => updateUserData({ about_me: e.target.value })}
         sx={{ mt: 1 }}
       />
     </Box>
@@ -22,16 +22,6 @@ export const AboutMeComponent = () => {
 
 export const AddressComponent = () => {
   const { userData, updateUserData } = useOnboarding();
-  const { address } = userData;
-
-  const handleAddressChange = (field, value) => {
-    updateUserData({
-      address: {
-        ...address,
-        [field]: value
-      }
-    });
-  };
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -39,29 +29,29 @@ export const AddressComponent = () => {
       <TextField
         fullWidth
         label="Street Address"
-        value={address.street}
-        onChange={(e) => handleAddressChange('street', e.target.value)}
+        value={userData.street_address || ''}
+        onChange={(e) => updateUserData({ street_address: e.target.value })}
         sx={{ mt: 1 }}
       />
       <TextField
         fullWidth
         label="City"
-        value={address.city}
-        onChange={(e) => handleAddressChange('city', e.target.value)}
+        value={userData.city || ''}
+        onChange={(e) => updateUserData({ city: e.target.value })}
         sx={{ mt: 1 }}
       />
       <TextField
         fullWidth
         label="State"
-        value={address.state}
-        onChange={(e) => handleAddressChange('state', e.target.value)}
+        value={userData.state || ''}
+        onChange={(e) => updateUserData({ state: e.target.value })}
         sx={{ mt: 1 }}
       />
       <TextField
         fullWidth
         label="ZIP Code"
-        value={address.zip}
-        onChange={(e) => handleAddressChange('zip', e.target.value)}
+        value={userData.zip_code || ''}
+        onChange={(e) => updateUserData({ zip_code: e.target.value })}
         sx={{ mt: 1 }}
       />
     </Box>

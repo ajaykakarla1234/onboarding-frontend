@@ -70,7 +70,8 @@ const OnboardingWizard = () => {
         setCurrentStep(prev => prev + 1);
         navigate(`/onboarding/step${currentStep + 1}`);
       } else {
-        navigate('/data'); // Redirect to data table on completion
+        setCurrentStep(4); // Mark as completed
+        navigate('/onboarding/step1'); // Return to start for new registration if needed
       }
     } catch (error) {
       setError('Failed to save progress');
@@ -104,7 +105,7 @@ const OnboardingWizard = () => {
               You are logged in as: <strong>{user.email}</strong>
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Click Next to continue with your onboarding process.
+              Click Start to begin your onboarding process.
             </Typography>
           </Box>
           <Button 
@@ -113,19 +114,19 @@ const OnboardingWizard = () => {
             onClick={handleNext}
             fullWidth
           >
-            Next
+            Start Onboarding
           </Button>
         </Box>
       );
     }
     
     return (
-      <>
+      <Box>
         <DynamicStepContent step={currentStep} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
           <Button
             onClick={handleBack}
-            disabled={currentStep === 1}
+            variant="outlined"
           >
             Back
           </Button>
@@ -133,10 +134,10 @@ const OnboardingWizard = () => {
             variant="contained"
             onClick={handleNext}
           >
-            {currentStep === 3 ? 'Finish' : 'Next'}
+            {currentStep === 3 ? 'Complete' : 'Next'}
           </Button>
         </Box>
-      </>
+      </Box>
     );
   };
 
