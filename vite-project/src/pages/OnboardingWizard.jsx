@@ -23,6 +23,7 @@ const OnboardingWizard = () => {
   const { userData, updateUserData, currentStep, setCurrentStep } = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showCompletion, setShowCompletion] = useState(false);
 
   useEffect(() => {
     const fetchCurrentStep = async () => {
@@ -70,8 +71,7 @@ const OnboardingWizard = () => {
         setCurrentStep(prev => prev + 1);
         navigate(`/onboarding/step${currentStep + 1}`);
       } else {
-        setCurrentStep(4); // Mark as completed
-        navigate('/onboarding/step1'); // Return to start for new registration if needed
+        setShowCompletion(true);
       }
     } catch (error) {
       setError('Failed to save progress');
@@ -96,6 +96,35 @@ const OnboardingWizard = () => {
   }
 
   const renderStepContent = () => {
+    if (showCompletion) {
+      return (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h5" sx={{ mb: 2, color: 'success.main' }}>
+              🎉 Successfully Onboarded!
+            </Typography>
+            <Typography>
+              Thank you for completing the onboarding process, {user.email}!
+            </Typography>
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              Your information has been successfully saved.
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setShowCompletion(false);
+              setCurrentStep(1);
+              navigate('/onboarding/step1');
+            }}
+          >
+            Return to Start
+          </Button>
+        </Box>
+      );
+    }
+
     if (currentStep === 1) {
       return (
         <Box sx={{ mt: 2 }}>
