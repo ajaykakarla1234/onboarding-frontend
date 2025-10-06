@@ -102,16 +102,12 @@ const AdminPage = () => {
       
       console.log('Saving config:', configArray);
       
-      // Use admin-specific endpoint with fixed auth
+      // Use admin-specific endpoint with auth
       console.log('Sending config data:', configArray);
       
       // Send the raw array directly as the backend expects
-      // Even though the interceptor should add the header, let's add it directly to ensure it's present
-      const response = await api.put('/api/config', configArray, {
-        headers: {
-          'Authorization': `Bearer ${user.email}` // Use the logged-in admin's email
-        }
-      });
+      // The api interceptor will add the authorization header
+      const response = await api.put('/api/config', configArray);
       
       console.log('Config save response:', response);
       console.log('Config save status:', response.status, response.statusText);

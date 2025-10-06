@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-// Use environment variable if available, otherwise fall back to the EC2 IP
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000';
+// Determine if we're running in local development environment
+const isLocalDevelopment = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1';
+
+// For local development, we'll use the proxy defined in vite.config.js
+// For production, we'll use the environment variable or fall back to EC2 IP
+const apiBaseUrl = isLocalDevelopment 
+  ? '' // Use relative URL to leverage Vite proxy  
+  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000');
+
+console.log('API using baseURL:', apiBaseUrl);
 
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -12,7 +21,7 @@ const api = axios.create({
 
 // Add a request interceptor to include auth token if available
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('authToken'); // Changed from 'token' to match AuthContext
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

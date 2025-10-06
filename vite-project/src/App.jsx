@@ -18,7 +18,7 @@ function App() {
       <CssBaseline />
       <AuthProvider>
         <OnboardingProvider>
-          <Router>
+          <Router basename="/onboarding-frontend">
             <Header />
             <Box sx={{ pt: 2 }}>
               <Routes>
