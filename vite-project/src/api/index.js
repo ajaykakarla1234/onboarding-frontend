@@ -18,9 +18,10 @@ api.interceptors.request.use((config) => {
     config.headers['Authorization'] = `Bearer ${token}`;
   }
   
-  // Special case for admin config endpoint
-  if (config.url === '/api/config' && config.method === 'put') {
-    // Always include admin auth for config updates
+  // Special case for admin config endpoint - only add default admin auth if no auth header exists
+  if (config.url === '/api/config' && config.method === 'put' && !config.headers['Authorization']) {
+    // Add default admin auth for config updates if none was provided
+    console.log('Adding default admin auth for config endpoint');
     config.headers['Authorization'] = 'Bearer admin@onboarding.io';
   }
   

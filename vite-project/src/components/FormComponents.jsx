@@ -168,6 +168,44 @@ export const AddressComponent = () => {
 
 export const BirthdateComponent = () => {
   const { userData, updateUserData } = useOnboarding();
+  const [error, setError] = useState('');
+  
+  const validateAge = (birthdate) => {
+    if (!birthdate) return true;
+    
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    
+    // Calculate age
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age >= 18;
+  };
+  
+  const handleDateChange = (e) => {
+    const birthdate = e.target.value;
+    
+    if (!validateAge(birthdate)) {
+      setError('You must be at least 18 years old');
+    } else {
+      setError('');
+    }
+    
+    updateUserData({ birthdate });
+  };
+
+  // Calculate max date (18 years ago from today)
+  const calculateMaxDate = () => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - 18);
+    return today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  };
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -190,8 +228,13 @@ export const BirthdateComponent = () => {
         type="date"
         label="Birth Date"
         value={userData.birthdate || ''}
-        onChange={(e) => updateUserData({ birthdate: e.target.value })}
+        onChange={handleDateChange}
         variant="outlined"
+        error={!!error}
+        helperText={error}
+        inputProps={{
+          max: calculateMaxDate() // Restrict dates to 18+ years ago
+        }}
         InputLabelProps={{
           shrink: true,
           style: { background: 'white', padding: '0 8px' }
@@ -211,10 +254,10 @@ export const BirthdateComponent = () => {
       />
       <Typography 
         variant="body2" 
-        color="text.secondary" 
+        color={error ? "error" : "text.secondary"} 
         sx={{ mt: 1, fontSize: '0.875rem' }}
       >
-        Please enter your date of birth
+        {error || 'You must be at least 18 years old to register'}
       </Typography>
     </Box>
   );

@@ -27,8 +27,10 @@ const AdminPage = () => {
   const [success, setSuccess] = useState('');
 
   useEffect(() => {
-    // Redirect if not admin
-    if (user && user.role !== 'admin') {
+    // Redirect if not logged in or not admin
+    if (!user) {
+      navigate('/login');
+    } else if (user && user.role !== 'admin') {
       navigate('/');
     }
   }, [user, navigate]);
@@ -104,9 +106,12 @@ const AdminPage = () => {
       console.log('Sending config data:', configArray);
       
       // Send the raw array directly as the backend expects
-      // NOTE: The API interceptor in api/index.js already adds the admin authorization header
-      // so we don't need to add it here to avoid duplication
-      const response = await api.put('/api/config', configArray);
+      // Even though the interceptor should add the header, let's add it directly to ensure it's present
+      const response = await api.put('/api/config', configArray, {
+        headers: {
+          'Authorization': `Bearer ${user.email}` // Use the logged-in admin's email
+        }
+      });
       
       console.log('Config save response:', response);
       console.log('Config save status:', response.status, response.statusText);

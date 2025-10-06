@@ -78,7 +78,8 @@ const OnboardingWizard = () => {
         state: userData.state || '',
         zip_code: userData.zip_code || '',
         birthdate: userData.birthdate || null,
-        progress: currentStep + 1 // Update progress for next step
+        progress: currentStep + 1, // Update progress for next step
+        currentPage: currentStep // This is important for the backend to update progress properly
       });
 
       if (response.data.user) {
@@ -104,7 +105,8 @@ const OnboardingWizard = () => {
 
         // Final update to mark as completed
         await api.put(`/api/users/${user.id}`, {
-          progress: 4
+          progress: 4,
+          currentPage: 3  // This tells the backend we're on the last step
         });
         
         // Redirect to completion page

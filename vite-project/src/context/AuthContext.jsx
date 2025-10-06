@@ -14,6 +14,11 @@ export const AuthProvider = ({ children }) => {
         ...response.data,
         progress: response.data.progress || 1 // Default to step 1 if progress not provided
       };
+      
+      // Store auth info in localStorage for persistent sessions
+      localStorage.setItem('authToken', userData.email);
+      localStorage.setItem('userRole', userData.role);
+      
       setUser(userData);
       return userData;
     } catch (error) {
@@ -30,6 +35,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    // Clear auth data from localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userRole');
   };
 
   return (

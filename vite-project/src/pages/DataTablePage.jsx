@@ -23,7 +23,10 @@ const DataTablePage = () => {
     const fetchData = async () => {
       try {
         const response = await api.get('/api/users');
-        setUserData(response.data);
+        // Sort users by email for consistency
+        const sortedUsers = response.data.sort((a, b) => a.email.localeCompare(b.email));
+        setUserData(sortedUsers);
+        console.log('Fetched users with progress:', sortedUsers.map(u => ({email: u.email, progress: u.progress})));
         setError('');
       } catch (error) {
         setError('Failed to fetch user data');
@@ -33,6 +36,10 @@ const DataTablePage = () => {
     };
 
     fetchData();
+    
+    // Refresh user data every 10 seconds to show latest progress
+    const intervalId = setInterval(fetchData, 10000);
+    return () => clearInterval(intervalId);
   }, []);
 
   if (loading) {
@@ -78,7 +85,19 @@ const DataTablePage = () => {
                   ) : '-'}
                 </TableCell>
                 <TableCell>{user.birthdate || '-'}</TableCell>
-                <TableCell>{user.progress ? `Step ${user.progress} of 4` : 'Not started'}</TableCell>
+                <TableCell>
+                  {user.progress ? (
+                    <Box 
+                      sx={{ 
+                        color: user.progress === 4 ? 'success.main' : 'info.main',
+                        fontWeight: user.progress === 4 ? 'bold' : 'normal'
+                      }}
+                    >
+                      Step {user.progress} of 4
+                      {user.progress === 4 && ' (Completed)'}
+                    </Box>
+                  ) : 'Not started'}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

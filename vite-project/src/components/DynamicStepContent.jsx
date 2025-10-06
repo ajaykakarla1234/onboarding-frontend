@@ -48,9 +48,36 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
     }
   }, [step, config]);
 
+  // Function to validate age (18+)
+  const validateAge = (birthdate) => {
+    if (!birthdate) return true;
+    
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    
+    // Calculate age
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Adjust age if birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age >= 18;
+  };
+
   const handleSave = async () => {
     try {
       console.log('Saving user data for step', step, ':', userData);
+      
+      // Validate birthdate if it's included in this step
+      if (components.includes('birthdate') && userData.birthdate) {
+        if (!validateAge(userData.birthdate)) {
+          setError('You must be at least 18 years old to continue');
+          return;
+        }
+      }
       
       // Update user data using PUT request
       await api.put(`/api/users/${user.id}`, {
@@ -59,7 +86,8 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
         city: userData.city,
         state: userData.state,
         zip_code: userData.zip_code,
-        birthdate: userData.birthdate
+        birthdate: userData.birthdate,
+        currentPage: step // Send current page info for progress tracking
       });
 
       console.log('User data saved successfully');
