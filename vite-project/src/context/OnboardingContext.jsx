@@ -46,16 +46,22 @@ export const OnboardingProvider = ({ children }) => {
 
   const updateUserData = (data) => {
     console.log('Updating user data:', data);
-    // Ensure we're getting all fields from the response
-    setUserData(prevData => ({
-      ...prevData,
-      about_me: data.about_me || '',
-      street_address: data.street_address || '',
-      city: data.city || '',
-      state: data.state || '',
-      zip_code: data.zip_code || '',
-      birthdate: data.birthdate || null
-    }));
+    
+    // Handle both function updates and direct object updates
+    if (typeof data === 'function') {
+      setUserData(data);
+    } else {
+      // Update only the fields that are provided
+      setUserData(prevData => ({
+        ...prevData,
+        ...(data.about_me !== undefined ? { about_me: data.about_me } : {}),
+        ...(data.street_address !== undefined ? { street_address: data.street_address } : {}),
+        ...(data.city !== undefined ? { city: data.city } : {}),
+        ...(data.state !== undefined ? { state: data.state } : {}),
+        ...(data.zip_code !== undefined ? { zip_code: data.zip_code } : {}),
+        ...(data.birthdate !== undefined ? { birthdate: data.birthdate } : {})
+      }));
+    }
   };
 
   const updateProgress = (newProgress) => {

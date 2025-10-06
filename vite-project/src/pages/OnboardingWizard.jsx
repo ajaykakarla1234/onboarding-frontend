@@ -51,9 +51,9 @@ const OnboardingWizard = () => {
       // Set the current step based on the URL or user's progress
       setCurrentStep(currentPageNumber);
 
-      // If onboarding is completed, redirect to dashboard
+      // If onboarding is completed, show completion screen
       if (user.progress === 4) {
-        navigate('/dashboard');
+        setShowCompletion(true);
       }
     } catch (err) {
       console.error('Error in progress effect:', err);
@@ -96,8 +96,7 @@ const OnboardingWizard = () => {
         setCurrentStep(nextStep);
         navigate(`/onboarding/step${nextStep}`);
       } else {
-        // Show completion screen
-        setShowCompletion(true);
+        // Update user progress
         setUser(prev => ({ 
           ...prev, 
           progress: 4 // Mark as completed
@@ -107,6 +106,9 @@ const OnboardingWizard = () => {
         await api.put(`/api/users/${user.id}`, {
           progress: 4
         });
+        
+        // Redirect to completion page
+        navigate('/completion');
       }
     } catch (error) {
       console.error('Onboarding error:', {
@@ -190,29 +192,59 @@ const OnboardingWizard = () => {
   const renderStepContent = () => {
     if (showCompletion) {
       return (
-        <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h5" sx={{ mb: 2, color: 'success.main' }}>
-              🎉 Successfully Onboarded!
-            </Typography>
-            <Typography>
-              Thank you for completing the onboarding process, {user.email}!
-            </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              Your information has been successfully saved.
+        <Box sx={{ 
+          textAlign: 'center', 
+          py: 6,
+          px: 3,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          <Box sx={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            backgroundColor: 'success.light',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mb: 3
+          }}>
+            <Typography variant="h4" role="img" aria-label="success">
+              ✓
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              setShowCompletion(false);
-              setCurrentStep(1);
-              navigate('/onboarding/step1');
+          
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              mb: 2,
+              color: 'success.main',
+              fontWeight: 600
             }}
           >
-            Return to Start
-          </Button>
+            Welcome Aboard!
+          </Typography>
+          
+          <Typography variant="h6" sx={{ mb: 3, color: 'text.secondary' }}>
+            Your onboarding process is complete
+          </Typography>
+          
+          <Box sx={{ 
+            maxWidth: 400,
+            mx: 'auto',
+            mb: 4,
+            p: 3,
+            bgcolor: 'success.light',
+            borderRadius: 2,
+            color: 'success.dark'
+          }}>
+            <Typography>
+              Thank you for joining us, {user.email}! Your account is now fully set up.
+            </Typography>
+          </Box>
+
+          {/* Button removed as it was unnecessary */}
         </Box>
       );
     }

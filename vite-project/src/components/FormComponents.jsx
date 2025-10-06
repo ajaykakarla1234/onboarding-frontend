@@ -1,12 +1,26 @@
 import { TextField, Box, Typography } from '@mui/material';
 import { useOnboarding } from '../context/OnboardingContext';
+import { useState, useEffect } from 'react';
 
 export const AboutMeComponent = () => {
   const { userData, updateUserData } = useOnboarding();
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">About Me</Typography>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 3, 
+          color: 'primary.main',
+          fontWeight: 600,
+          borderBottom: '2px solid',
+          borderColor: 'primary.main',
+          pb: 1,
+          display: 'inline-block'
+        }}
+      >
+        About Me
+      </Typography>
       <TextField
         multiline
         rows={4}
@@ -14,7 +28,24 @@ export const AboutMeComponent = () => {
         label="Tell us about yourself"
         value={userData.about_me || ''}
         onChange={(e) => updateUserData({ about_me: e.target.value })}
-        sx={{ mt: 1 }}
+        variant="outlined"
+        placeholder="Share a brief description about yourself..."
+        InputLabelProps={{
+          shrink: true,
+          style: { background: 'white', padding: '0 8px' }
+        }}
+        sx={{
+          background: '#fff',
+          borderRadius: 1,
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: 'primary.main',
+            },
+            '&.Mui-focused fieldset': {
+              borderWidth: '2px',
+            }
+          }
+        }}
       />
     </Box>
   );
@@ -22,38 +53,115 @@ export const AboutMeComponent = () => {
 
 export const AddressComponent = () => {
   const { userData, updateUserData } = useOnboarding();
+  const [addressData, setAddressData] = useState({
+    street_address: userData.street_address || '',
+    city: userData.city || '',
+    state: userData.state || '',
+    zip_code: userData.zip_code || ''
+  });
+
+  // Update local state first
+  const handleChange = (field) => (event) => {
+    const value = field === 'zip_code' 
+      ? event.target.value.replace(/\D/g, '').slice(0, 5) 
+      : event.target.value;
+    
+    setAddressData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Also update the parent context
+    updateUserData({
+      ...userData,
+      [field]: value
+    });
+  };
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Address</Typography>
-      <TextField
-        fullWidth
-        label="Street Address"
-        value={userData.street_address || ''}
-        onChange={(e) => updateUserData({ street_address: e.target.value })}
-        sx={{ mt: 1 }}
-      />
-      <TextField
-        fullWidth
-        label="City"
-        value={userData.city || ''}
-        onChange={(e) => updateUserData({ city: e.target.value })}
-        sx={{ mt: 1 }}
-      />
-      <TextField
-        fullWidth
-        label="State"
-        value={userData.state || ''}
-        onChange={(e) => updateUserData({ state: e.target.value })}
-        sx={{ mt: 1 }}
-      />
-      <TextField
-        fullWidth
-        label="ZIP Code"
-        value={userData.zip_code || ''}
-        onChange={(e) => updateUserData({ zip_code: e.target.value })}
-        sx={{ mt: 1 }}
-      />
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 3, 
+          color: 'primary.main',
+          fontWeight: 600,
+          borderBottom: '2px solid',
+          borderColor: 'primary.main',
+          pb: 1,
+          display: 'inline-block'
+        }}
+      >
+        Address Information
+      </Typography>
+      
+      {/* Simple stacked layout with clear margins */}
+      <Box sx={{ mb: 4 }}>
+        <TextField
+          fullWidth
+          id="street_address"
+          name="street_address"
+          label="Street Address"
+          value={addressData.street_address}
+          onChange={handleChange('street_address')}
+          variant="outlined"
+          margin="normal"
+          placeholder="Enter your street address"
+          InputLabelProps={{
+            shrink: true,
+            style: { background: 'white', padding: '0 8px' }
+          }}
+        />
+        
+        <TextField
+          fullWidth
+          id="city"
+          name="city"
+          label="City"
+          value={addressData.city}
+          onChange={handleChange('city')}
+          variant="outlined"
+          margin="normal"
+          placeholder="Enter your city"
+          InputLabelProps={{
+            shrink: true,
+            style: { background: 'white', padding: '0 8px' }
+          }}
+        />
+        
+        <TextField
+          fullWidth
+          id="state"
+          name="state"
+          label="State"
+          value={addressData.state}
+          onChange={handleChange('state')}
+          variant="outlined"
+          margin="normal"
+          placeholder="Enter your state"
+          InputLabelProps={{
+            shrink: true,
+            style: { background: 'white', padding: '0 8px' }
+          }}
+        />
+        
+        <TextField
+          fullWidth
+          id="zip_code"
+          name="zip_code"
+          label="ZIP Code"
+          value={addressData.zip_code}
+          onChange={handleChange('zip_code')}
+          variant="outlined"
+          margin="normal"
+          placeholder="Enter your ZIP code"
+          inputProps={{ maxLength: 5 }}
+          InputLabelProps={{
+            shrink: true,
+            style: { background: 'white', padding: '0 8px' }
+          }}
+        />
+      </Box>
     </Box>
   );
 };
@@ -63,14 +171,51 @@ export const BirthdateComponent = () => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Birthdate</Typography>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 3, 
+          color: 'primary.main',
+          fontWeight: 600,
+          borderBottom: '2px solid',
+          borderColor: 'primary.main',
+          pb: 1,
+          display: 'inline-block'
+        }}
+      >
+        Birthdate
+      </Typography>
       <TextField
         fullWidth
         type="date"
-        value={userData.birthdate}
+        label="Birth Date"
+        value={userData.birthdate || ''}
         onChange={(e) => updateUserData({ birthdate: e.target.value })}
-        sx={{ mt: 1 }}
+        variant="outlined"
+        InputLabelProps={{
+          shrink: true,
+          style: { background: 'white', padding: '0 8px' }
+        }}
+        sx={{
+          background: '#fff',
+          borderRadius: 1,
+          '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+              borderColor: 'primary.main',
+            },
+            '&.Mui-focused fieldset': {
+              borderWidth: '2px',
+            }
+          }
+        }}
       />
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        sx={{ mt: 1, fontSize: '0.875rem' }}
+      >
+        Please enter your date of birth
+      </Typography>
     </Box>
   );
 };
