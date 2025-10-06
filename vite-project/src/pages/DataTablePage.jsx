@@ -7,6 +7,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TablePagination,
   Typography,
   Alert,
   CircularProgress,
@@ -18,15 +19,31 @@ const DataTablePage = () => {
   const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [pagination, setPagination] = useState({
+    total_items: 0,
+    total_pages: 0,
+    current_page: 1,
+    per_page: 10,
+    has_next: false,
+    has_prev: false
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await api.get('/api/users');
-        // Sort users by email for consistency
-        const sortedUsers = response.data.sort((a, b) => a.email.localeCompare(b.email));
-        setUserData(sortedUsers);
-        console.log('Fetched users with progress:', sortedUsers.map(u => ({email: u.email, progress: u.progress})));
+        // Adding +1 to page because MUI uses 0-based indexing while the API uses 1-based
+        const response = await api.get('/api/users', {
+          params: {
+            page: page + 1,
+            per_page: rowsPerPage
+          }
+        });
+        
+        setUserData(response.data.users);
+        setPagination(response.data.pagination);
+        console.log('Fetched users with pagination:', response.data.pagination);
         setError('');
       } catch (error) {
         setError('Failed to fetch user data');
@@ -40,7 +57,7 @@ const DataTablePage = () => {
     // Refresh user data every 10 seconds to show latest progress
     const intervalId = setInterval(fetchData, 10000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [page, rowsPerPage]);
 
   if (loading) {
     return (
@@ -103,6 +120,19 @@ const DataTablePage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      
+      <TablePagination
+        component="div"
+        count={pagination.total_items}
+        page={page}
+        onPageChange={(event, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(event) => {
+          setRowsPerPage(parseInt(event.target.value, 10));
+          setPage(0); // Reset to first page when changing rows per page
+        }}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+      />
     </Paper>
   );
 };
