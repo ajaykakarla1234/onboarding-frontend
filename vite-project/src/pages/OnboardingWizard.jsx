@@ -19,62 +19,124 @@ const steps = ['Registration', 'Additional Info', 'Final Details'];
 
 const OnboardingWizard = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { userData, updateUserData, currentStep, setCurrentStep } = useOnboarding();
+  const { user, setUser } = useAuth();
+  const { 
+    userData, 
+    updateUserData, 
+    currentStep, 
+    setCurrentStep
+  } = useOnboarding();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCompletion, setShowCompletion] = useState(false);
 
   useEffect(() => {
-    const fetchCurrentStep = async () => {
-      if (!user) {
-        navigate('/login');
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      // Get the current page number from the URL
+      const currentPageNumber = parseInt(window.location.pathname.split('step')[1]) || 1;
+      
+      // If user is trying to access a step beyond their progress, redirect
+      if (currentPageNumber > user.progress) {
+        navigate(`/onboarding/step${user.progress}`);
         return;
       }
+      
+      // Set the current step based on the URL or user's progress
+      setCurrentStep(currentPageNumber);
 
-      try {
-        const response = await api.get(`/api/current-step?userId=${user.id}`);
-        setCurrentStep(response.data.currentStep || 1);
-        if (response.data.completed) {
-          navigate('/data');
-        }
-      } catch (error) {
-        setError('Failed to fetch current step');
-      } finally {
-        setLoading(false);
+      // If onboarding is completed, redirect to dashboard
+      if (user.progress === 4) {
+        navigate('/dashboard');
       }
-    };
-
-    fetchCurrentStep();
+    } catch (err) {
+      console.error('Error in progress effect:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [user, navigate, setCurrentStep]);
 
-  const handleNext = async () => {
+  const handleNext = async (e) => {
+    if (e) e.preventDefault();
     try {
+      // Don't handle step 1 here anymore, it's handled by handleStartOnboarding
       if (currentStep === 1) {
-        // Skip registration for step 1 since we're using default credentials
-        setCurrentStep(prev => prev + 1);
-        navigate('/onboarding/step2');
         return;
       }
 
-      // For other steps, update user data
-      await api.put(`/api/users/${user.id}`, {
-        about_me: userData.about_me,
-        street_address: userData.street_address,
-        city: userData.city,
-        state: userData.state,
-        zip_code: userData.zip_code,
-        birthdate: userData.birthdate
+      // For other steps, update user data with form data
+      const response = await api.put(`/api/users/${user.id}`, {
+        about_me: userData.about_me || '',
+        street_address: userData.street_address || '',
+        city: userData.city || '',
+        state: userData.state || '',
+        zip_code: userData.zip_code || '',
+        birthdate: userData.birthdate || null,
+        progress: currentStep + 1 // Update progress for next step
       });
+
+      if (response.data.user) {
+        // Update the local userData with the response
+        updateUserData(response.data.user);
+        // Update user progress
+        setUser(prev => ({
+          ...prev,
+          progress: currentStep + 1
+        }));
+      }
       
       if (currentStep < 3) {
-        setCurrentStep(prev => prev + 1);
-        navigate(`/onboarding/step${currentStep + 1}`);
+        const nextStep = currentStep + 1;
+        setCurrentStep(nextStep);
+        navigate(`/onboarding/step${nextStep}`);
       } else {
+        // Show completion screen
         setShowCompletion(true);
+        setUser(prev => ({ 
+          ...prev, 
+          progress: 4 // Mark as completed
+        }));
+
+        // Final update to mark as completed
+        await api.put(`/api/users/${user.id}`, {
+          progress: 4
+        });
       }
     } catch (error) {
-      setError('Failed to save progress');
+      console.error('Onboarding error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        step: currentStep
+      });
+
+      // Clear any previous errors
+      setError('');
+
+      if (error.response?.status === 401) {
+        setError('Your session has expired. Please login again.');
+        navigate('/login');
+      } else if (error.response?.status === 404) {
+        // Handle the case where the endpoint doesn't exist
+        if (error.config?.url.includes('/progress')) {
+          // Ignore this error and let the main update handle it
+          return;
+        }
+        setError('User not found. Please login again.');
+        navigate('/login');
+      } else if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (error.message.includes('Network Error')) {
+        setError('Cannot connect to server. Please check your connection.');
+      } else {
+        setError('There was a problem updating your information. Please try again.');
+      }
     }
   };
 
@@ -94,6 +156,36 @@ const OnboardingWizard = () => {
       </Box>
     );
   }
+
+  const handleStartOnboarding = async (e) => {
+    e.preventDefault();
+    setError(''); // Clear any existing errors
+
+    try {
+      // Make API call to update user progress
+      const response = await api.put(`/api/users/${user.id}`, {
+        progress: 2
+      });
+
+      if (response.data) {
+        const updatedUser = response.data.user || response.data;
+        
+        // Update the user context with the new progress
+        setUser(prev => ({
+          ...prev,
+          ...updatedUser,
+          progress: 2
+        }));
+
+        // Update current step and navigate
+        setCurrentStep(2);
+        navigate('/onboarding/step2', { replace: true });
+      }
+    } catch (error) {
+      console.error('Error in handleStartOnboarding:', error);
+      setError('Could not start onboarding. Please try again.');
+    }
+  };
 
   const renderStepContent = () => {
     if (showCompletion) {
@@ -127,7 +219,7 @@ const OnboardingWizard = () => {
 
     if (currentStep === 1) {
       return (
-        <Box sx={{ mt: 2 }}>
+        <Box component="form" onSubmit={handleStartOnboarding} sx={{ mt: 2 }}>
           <Typography variant="h6" sx={{ mb: 2 }}>Welcome!</Typography>
           <Box sx={{ mb: 3 }}>
             <Typography>
@@ -140,7 +232,7 @@ const OnboardingWizard = () => {
           <Button 
             variant="contained" 
             color="primary"
-            onClick={handleNext}
+            type="submit"
             fullWidth
           >
             Start Onboarding
@@ -151,21 +243,11 @@ const OnboardingWizard = () => {
     
     return (
       <Box>
-        <DynamicStepContent step={currentStep} />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-          <Button
-            onClick={handleBack}
-            variant="outlined"
-          >
-            Back
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleNext}
-          >
-            {currentStep === 3 ? 'Complete' : 'Next'}
-          </Button>
-        </Box>
+        <DynamicStepContent 
+          step={currentStep}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
       </Box>
     );
   };
@@ -181,9 +263,11 @@ const OnboardingWizard = () => {
       </Stepper>
       
       {error && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {error}
-        </Typography>
+        <Box sx={{ mb: 2, mt: -2 }}>
+          <Typography color="error" variant="body2">
+            {error}
+          </Typography>
+        </Box>
       )}
 
       {renderStepContent()}

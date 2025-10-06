@@ -5,8 +5,9 @@ import { OnboardingProvider } from './context/OnboardingContext';
 import OnboardingWizard from './pages/OnboardingWizard';
 import AdminPage from './pages/AdminPage';
 import DataTablePage from './pages/DataTablePage';
-import LoginPage from './pages/LoginPage';
+import Login from './pages/Login';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const theme = createTheme();
 
@@ -21,12 +22,47 @@ function App() {
             <Box sx={{ pt: 2 }}>
               <Routes>
                 <Route path="/" element={<Navigate to="/login" />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/onboarding/step1" element={<OnboardingWizard />} />
-                <Route path="/onboarding/step2" element={<OnboardingWizard />} />
-                <Route path="/onboarding/step3" element={<OnboardingWizard />} />
-                <Route path="/admin" element={<AdminPage />} />
-                <Route path="/data" element={<DataTablePage />} />
+                <Route path="/login" element={<Login />} />
+                <Route 
+                  path="/onboarding/step1" 
+                  element={
+                    <ProtectedRoute requiredProgress={1}>
+                      <OnboardingWizard key="step1" />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/onboarding/step2" 
+                  element={
+                    <ProtectedRoute requiredProgress={2}>
+                      <OnboardingWizard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/onboarding/step3" 
+                  element={
+                    <ProtectedRoute requiredProgress={3}>
+                      <OnboardingWizard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard" 
+                  element={
+                    <ProtectedRoute requiredProgress={4}>
+                      <DataTablePage />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin" 
+                  element={
+                    <ProtectedRoute>
+                      <AdminPage />
+                    </ProtectedRoute>
+                  } 
+                />
               </Routes>
             </Box>
           </Router>

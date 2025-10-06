@@ -1,41 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Button, Typography, Stack } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import { AboutMeComponent, AddressComponent, BirthdateComponent } from '../components/FormComponents';
+import { AboutMeComponent, AddressComponent, BirthdateComponent } from './FormComponents';
 import { useOnboarding } from '../context/OnboardingContext';
+import { useAuth } from '../context/AuthContext';
 
-const DynamicStepContent = ({ step }) => {
+const DynamicStepContent = ({ step, onNext, onBack }) => {
   const navigate = useNavigate();
-  const { userData, setCurrentStep } = useOnboarding();
+  const { userData, config } = useOnboarding();
+  const { user } = useAuth();
   const [components, setComponents] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchComponents = async () => {
-      try {
-        const response = await api.get('/api/config');
-        const config = response.data.find(c => c.page_number === step);
-        if (config) {
-          const activeComponents = [];
-          if (config.has_about_me) activeComponents.push('about_me');
-          if (config.has_address) activeComponents.push('address');
-          if (config.has_birthdate) activeComponents.push('birthdate');
-          setComponents(activeComponents);
-          console.log('Active components:', activeComponents);
-        }
-      } catch (error) {
-        console.error('Error fetching components:', error);
-        setError('Failed to fetch components');
-      }
-    };
+    const pageConfig = config.find(c => c.page_number === step);
+    if (pageConfig) {
+      const activeComponents = [];
+      if (pageConfig.has_about_me) activeComponents.push('about_me');
+      if (pageConfig.has_address) activeComponents.push('address');
+      if (pageConfig.has_birthdate) activeComponents.push('birthdate');
+      setComponents(activeComponents);
+    }
+  }, [step, config]);
 
-    fetchComponents();
-  }, [step]);
-
-  const handleNext = async () => {
+  const handleSave = async () => {
     try {
-      const { user } = useAuth();
       // Update user data using PUT request
       await api.put(`/api/users/${user.id}`, {
         about_me: userData.about_me,
@@ -46,20 +36,12 @@ const DynamicStepContent = ({ step }) => {
         birthdate: userData.birthdate
       });
 
-      if (step < 3) {
-        setCurrentStep(step + 1);
-        navigate(`/onboarding/step${step + 1}`);
-      } else {
-        navigate('/data'); // Redirect to data table on completion
-      }
+      // Call the parent's onNext handler
+      onNext();
     } catch (error) {
+      console.error('Error updating user data:', error);
       setError('Failed to save progress');
     }
-  };
-
-  const handleBack = () => {
-    setCurrentStep(step - 1);
-    navigate(`/onboarding/step${step - 1}`);
   };
 
   const renderComponent = (componentName) => {
@@ -76,7 +58,7 @@ const DynamicStepContent = ({ step }) => {
   };
 
   return (
-    <Box>
+    <Box sx={{ p: 3 }}>
       {error && (
         <Typography color="error" sx={{ mb: 2 }}>
           {error}
@@ -84,6 +66,23 @@ const DynamicStepContent = ({ step }) => {
       )}
       
       {components.map(renderComponent)}
+
+      <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 3 }}>
+        <Button
+          variant="contained"
+          onClick={onBack}
+          disabled={step === 1}
+        >
+          Back
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+        >
+          {step === 3 ? 'Finish' : 'Next'}
+        </Button>
+      </Stack>
     </Box>
   );
 };

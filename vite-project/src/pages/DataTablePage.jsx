@@ -68,17 +68,17 @@ const DataTablePage = () => {
             {userData.map((user) => (
               <TableRow key={user.email}>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.aboutMe || '-'}</TableCell>
+                <TableCell>{user.about_me || '-'}</TableCell>
                 <TableCell>
-                  {user.address ? (
+                  {user.street_address ? (
                     <>
-                      {user.address.street}<br />
-                      {user.address.city}, {user.address.state} {user.address.zip}
+                      {user.street_address}<br />
+                      {user.city}, {user.state} {user.zip_code}
                     </>
                   ) : '-'}
                 </TableCell>
                 <TableCell>{user.birthdate || '-'}</TableCell>
-                <TableCell>{`Step ${user.currentStep} of 3`}</TableCell>
+                <TableCell>{user.progress ? `Step ${user.progress} of 4` : 'Not started'}</TableCell>
               </TableRow>
             ))}
           </TableBody>

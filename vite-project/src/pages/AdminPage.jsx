@@ -139,18 +139,12 @@ const AdminPage = () => {
         </FormControl>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+      <Box sx={{ mt: 4 }}>
         <Button
           variant="contained"
           onClick={handleSave}
         >
           Save Configuration
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={() => navigate('/data')}
-        >
-          View User Data
         </Button>
       </Box>
     </Paper>
