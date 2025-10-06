@@ -17,9 +17,18 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Don't proceed if already submitting
+    if (isSubmitting) return;
+    
+    // Clear any previous errors and set submitting state
+    setError('');
+    setIsSubmitting(true);
+    
     try {
       const user = await login(email, password);
       if (user.role === 'admin') {
@@ -28,7 +37,12 @@ const LoginPage = () => {
         navigate('/onboarding/step1');
       }
     } catch (error) {
+      // Set the error and ensure it stays visible
+      console.log('Login error:', error.message);
       setError(error.message);
+      
+      // Reset submitting state
+      setIsSubmitting(false);
     }
   };
 
@@ -53,7 +67,12 @@ const LoginPage = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit}
+          // Prevent default form submission behavior
+          noValidate
+        >
           <TextField
             fullWidth
             label="Email"
@@ -76,8 +95,9 @@ const LoginPage = () => {
             type="submit"
             variant="contained"
             fullWidth
+            disabled={isSubmitting}
           >
-            Login
+            {isSubmitting ? 'Logging in...' : 'Login'}
           </Button>
         </Box>
       </Paper>

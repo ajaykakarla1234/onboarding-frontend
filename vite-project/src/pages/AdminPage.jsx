@@ -104,13 +104,13 @@ const AdminPage = () => {
       console.log('Sending config data:', configArray);
       
       // Send the raw array directly as the backend expects
-      const response = await api.put('/api/config', configArray, {
-        headers: {
-          'Authorization': 'Bearer admin@onboarding.io'
-        }
-      });
+      // NOTE: The API interceptor in api/index.js already adds the admin authorization header
+      // so we don't need to add it here to avoid duplication
+      const response = await api.put('/api/config', configArray);
       
       console.log('Config save response:', response);
+      console.log('Config save status:', response.status, response.statusText);
+      console.log('Config save response data:', response.data);
       
       setSuccess('Configuration saved successfully');
       

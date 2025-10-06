@@ -17,7 +17,14 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
       return userData;
     } catch (error) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      // Provide clearer error messages based on the response
+      if (error.response?.status === 401) {
+        throw new Error('Invalid password. Please try again.');
+      } else if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else {
+        throw new Error('Login failed. Please check your credentials and try again.');
+      }
     }
   };
 
