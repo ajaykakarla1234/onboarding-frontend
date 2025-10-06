@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // Check if the request is for the API
+    if (window.location.pathname.startsWith('/onboarding-frontend/api/')) {
+      // Redirect API requests to the backend
+      const apiPath = window.location.pathname.replace('/onboarding-frontend/api/', '');
+      const apiUrl = 'http://18.117.218.119:5000/' + apiPath + window.location.search;
+      window.location.href = apiUrl;
+    } else {
+      // For all other paths, redirect to the index page
+      sessionStorage.setItem('redirect_path', window.location.pathname);
+      window.location.href = '/onboarding-frontend/';
+    }
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Redirect API requests to the backend server
+/api/*  http://18.117.218.119:5000/:splat  200
