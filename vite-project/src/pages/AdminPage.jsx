@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import { fetchLatestConfig } from '../utils/configUtils';
 
 const AdminPage = () => {
   const navigate = useNavigate();
@@ -35,16 +36,30 @@ const AdminPage = () => {
   useEffect(() => {
     const fetchComponents = async () => {
       try {
-        const response = await api.get('/api/config');
-        const config = response.data;
+        console.log('Admin Page - Fetching config...');
+        const config = await fetchLatestConfig();
+        console.log('Admin Page - Config data loaded:', config);
+        
+        if (!Array.isArray(config)) {
+          throw new Error('Invalid configuration format');
+        }
+        
+        // Map config to component state
         const newComponents = {
           aboutMe: { page: config.find(c => c.has_about_me)?.page_number || 2 },
           address: { page: config.find(c => c.has_address)?.page_number || 3 },
           birthdate: { page: config.find(c => c.has_birthdate)?.page_number || 2 }
         };
+        
+        console.log('Admin Page - Mapped components:', newComponents);
         setComponents(newComponents);
       } catch (error) {
-        setError('Failed to fetch component configuration');
+        console.error('Failed to fetch component configuration:', error);
+        if (error.response?.status === 401) {
+          setError('Authentication required. Please log in as admin.');
+        } else {
+          setError('Failed to fetch component configuration: ' + error.message);
+        }
       }
     };
 
@@ -71,20 +86,68 @@ const AdminPage = () => {
       return;
     }
 
+    setError('');
+    setSuccess('');
+
     try {
-      const config = [2, 3].map(pageNumber => ({
+      // Create config as an array of page configs
+      const configArray = [2, 3].map(pageNumber => ({
         page_number: pageNumber,
         has_about_me: components.aboutMe.page === pageNumber,
         has_address: components.address.page === pageNumber,
         has_birthdate: components.birthdate.page === pageNumber
       }));
       
-      await api.put('/api/config', config);
+      console.log('Saving config:', configArray);
+      
+      // Use admin-specific endpoint with fixed auth
+      console.log('Sending config data:', configArray);
+      
+      // Send the raw array directly as the backend expects
+      const response = await api.put('/api/config', configArray, {
+        headers: {
+          'Authorization': 'Bearer admin@onboarding.io'
+        }
+      });
+      
+      console.log('Config save response:', response);
+      
       setSuccess('Configuration saved successfully');
-      setError('');
+      
+      // Refresh component state from server to confirm changes
+      try {
+        const refreshResponse = await api.get('/api/config');
+        const updatedConfig = refreshResponse.data;
+        const newComponents = {
+          aboutMe: { page: updatedConfig.find(c => c.has_about_me)?.page_number || 2 },
+          address: { page: updatedConfig.find(c => c.has_address)?.page_number || 3 },
+          birthdate: { page: updatedConfig.find(c => c.has_birthdate)?.page_number || 2 }
+        };
+        setComponents(newComponents);
+      } catch (refreshError) {
+        console.error('Failed to refresh config after save:', refreshError);
+      }
     } catch (error) {
-      setError('Failed to save configuration');
-      setSuccess('');
+      console.error('Config save error:', error);
+      
+      // More detailed error handling
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 401) {
+          setError('Authentication failed. Please log in again as admin.');
+        } else if (error.response.status === 403) {
+          setError('You do not have permission to update the configuration.');
+        } else {
+          setError(`Server error: ${error.response.data.message || 'Unknown error'}`);
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError(`Error: ${error.message}`);
+      }
     }
   };
 

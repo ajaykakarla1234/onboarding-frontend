@@ -14,18 +14,44 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('DynamicStepContent - Current step:', step);
+    console.log('DynamicStepContent - Available config:', config);
+
+    // Safeguard against empty or invalid config
+    if (!Array.isArray(config) || config.length === 0) {
+      console.warn('No valid configuration found, using all components as fallback');
+      setComponents(['about_me', 'address', 'birthdate']);
+      return;
+    }
+
     const pageConfig = config.find(c => c.page_number === step);
+    console.log('Found page config for step', step, ':', pageConfig);
+
     if (pageConfig) {
       const activeComponents = [];
       if (pageConfig.has_about_me) activeComponents.push('about_me');
       if (pageConfig.has_address) activeComponents.push('address');
       if (pageConfig.has_birthdate) activeComponents.push('birthdate');
+      
+      console.log('Setting active components:', activeComponents);
       setComponents(activeComponents);
+      
+      // Fallback if no components are configured for this page
+      if (activeComponents.length === 0) {
+        console.warn('No components configured for step', step, 'using fallback');
+        setComponents(['about_me', 'address', 'birthdate']);
+      }
+    } else {
+      console.warn('No configuration found for step', step);
+      // Fallback if no config found for this step
+      setComponents(['about_me', 'address', 'birthdate']);
     }
   }, [step, config]);
 
   const handleSave = async () => {
     try {
+      console.log('Saving user data for step', step, ':', userData);
+      
       // Update user data using PUT request
       await api.put(`/api/users/${user.id}`, {
         about_me: userData.about_me,
@@ -36,6 +62,8 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
         birthdate: userData.birthdate
       });
 
+      console.log('User data saved successfully');
+      
       // Call the parent's onNext handler
       onNext();
     } catch (error) {
@@ -45,6 +73,8 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
   };
 
   const renderComponent = (componentName) => {
+    console.log('Rendering component:', componentName);
+    
     switch (componentName) {
       case 'about_me':
         return <AboutMeComponent key="about_me" />;
@@ -53,6 +83,7 @@ const DynamicStepContent = ({ step, onNext, onBack }) => {
       case 'birthdate':
         return <BirthdateComponent key="birthdate" />;
       default:
+        console.warn('Unknown component name:', componentName);
         return null;
     }
   };

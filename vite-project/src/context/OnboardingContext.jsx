@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api';
 import { useAuth } from './AuthContext';
+import { fetchLatestConfig } from '../utils/configUtils';
 
 const OnboardingContext = createContext();
 
@@ -21,18 +22,27 @@ export const OnboardingProvider = ({ children }) => {
   const [config, setConfig] = useState([]);
   const [progress, setProgress] = useState(1);
 
+  // Fetch config when the provider mounts or when currentStep changes
   useEffect(() => {
-    // Fetch configuration data when the provider mounts
-    const fetchConfig = async () => {
+    const loadConfig = async () => {
       try {
-        const response = await api.get('/api/config');
-        setConfig(response.data);
+        const configData = await fetchLatestConfig();
+        setConfig(configData);
       } catch (error) {
-        console.error('Error fetching config:', error);
+        console.error('Error loading config:', error);
       }
     };
 
-    fetchConfig();
+    loadConfig();
+    
+    // Set up polling to check for config updates every 30 seconds
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadConfig();
+      }
+    }, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   // Initialize progress from localStorage or set to 1

@@ -21,9 +21,6 @@ const Header = () => {
             <Button color="inherit" onClick={() => navigate('/admin')}>
               Admin Config
             </Button>
-            <Button color="inherit" onClick={() => navigate('/data')}>
-              View Data
-            </Button>
           </Box>
         )}
         <Button color="inherit" onClick={handleLogout}>
