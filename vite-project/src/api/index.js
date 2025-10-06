@@ -8,7 +8,7 @@ const isLocalDevelopment = window.location.hostname === 'localhost' ||
 // For production, we'll use the environment variable or fall back to EC2 IP
 const apiBaseUrl = isLocalDevelopment 
   ? '' // Use relative URL to leverage Vite proxy  
-  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000');
+  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000'); // Ensure no trailing /api
 
 console.log('API using baseURL:', apiBaseUrl);
 
