@@ -8,7 +8,7 @@ const isLocalDevelopment = window.location.hostname === 'localhost' ||
 // For production, we'll use the environment variable or fall back to EC2 IP
 const apiBaseUrl = isLocalDevelopment 
   ? '' // Use relative URL to leverage Vite proxy  
-  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000');
+  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000/api');
 
 console.log('API using baseURL:', apiBaseUrl);
 
@@ -41,7 +41,7 @@ api.interceptors.response.use(
     });
 
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
+      localStorage.removeItem('authToken'); // Fixed to match the token key used in request interceptor
       window.location.href = '/login';
     }
     return Promise.reject(error);
