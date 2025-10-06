@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Use environment variable if available, otherwise fall back to the EC2 IP
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000';
+
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000',  // Updated to match your Flask backend URL
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
