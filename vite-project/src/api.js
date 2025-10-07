@@ -5,10 +5,10 @@ const isLocalDevelopment = window.location.hostname === 'localhost' ||
                          window.location.hostname === '127.0.0.1';
 
 // For local development, we'll use the proxy defined in vite.config.js
-// For production, we'll use the environment variable or fall back to EC2 IP
+// For production, we'll use the environment variable or fall back to domain
 const apiBaseUrl = isLocalDevelopment 
   ? '' // Use relative URL to leverage Vite proxy  
-  : (import.meta.env.VITE_API_URL || 'http://18.117.218.119:5000'); // Removed /api since it's in the endpoint paths
+  : (import.meta.env.VITE_API_URL || 'https://getonboarded.duckdns.org'); // HTTPS domain for secure access
 
 console.log('API using baseURL:', apiBaseUrl);
 
